@@ -52,7 +52,7 @@ public class EtdOptionSecurityTest {
     return EtdOptionSecurity.builder()
         .info(SecurityInfo.of(SecurityId.of("A", "B"), SecurityPriceInfo.of(Currency.GBP, 100)))
         .contractSpecId(EtdContractSpecId.of("test", "123"))
-        .expiry(YearMonth.of(2017, 6))
+        .expiryMonth(YearMonth.of(2017, 6))
         .putCall(PutCall.PUT)
         .strikePrice(2)
         .build();
@@ -62,7 +62,7 @@ public class EtdOptionSecurityTest {
     return EtdOptionSecurity.builder()
         .info(SecurityInfo.of(SecurityId.of("B", "C"), SecurityPriceInfo.of(Currency.EUR, 10)))
         .contractSpecId(EtdContractSpecId.of("test", "234"))
-        .expiry(YearMonth.of(2017, 9))
+        .expiryMonth(YearMonth.of(2017, 9))
         .expiryDateCode("W1")
         .putCall(PutCall.CALL)
         .strikePrice(3)

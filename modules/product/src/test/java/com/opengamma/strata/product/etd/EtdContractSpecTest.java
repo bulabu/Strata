@@ -31,82 +31,83 @@ public class EtdContractSpecTest {
   private static final EtdContractSpec OPTION_CONTRACT = sut2();
 
   //-------------------------------------------------------------------------
-  public void createStandardOption() {
-    EtdOptionSecurity security = OPTION_CONTRACT.createOption(
-        SecurityId.of("test", "option"),
-        PutCall.CALL,
-        123.45,
-        YearMonth.of(2015, 6));
+  public void createFutureAutoId() {
+    EtdFutureSecurity security = FUTURE_CONTRACT.createFuture(YearMonth.of(2015, 6), "");
 
-    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of("test", "option"));
-    assertThat(security.getPutCall()).isEqualTo(PutCall.CALL);
-    assertThat(security.getStrikePrice()).isEqualTo(123.45);
-    assertThat(security.getExpiry()).isEqualTo(YearMonth.of(2015, 6));
-    assertThat(security.getContractSpecId()).isEqualTo(OPTION_CONTRACT.getId());
+    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of(EtdIdUtils.ETD_SCHEME, "F-ECAG-FOO-201506"));
+    assertThat(security.getExpiryMonth()).isEqualTo(YearMonth.of(2015, 6));
+    assertThat(security.getContractSpecId()).isEqualTo(FUTURE_CONTRACT.getId());
     assertThat(security.getExpiryDateCode()).isEmpty();
-    assertThat(security.getInfo().getPriceInfo()).isEqualTo(OPTION_CONTRACT.getPriceInfo());
+    assertThat(security.getInfo().getPriceInfo()).isEqualTo(FUTURE_CONTRACT.getPriceInfo());
   }
 
-  public void createNonStandardOption() {
-    EtdOptionSecurity security = OPTION_CONTRACT.createOption(
-        SecurityId.of("test", "option"),
-        PutCall.CALL,
-        123.45,
-        YearMonth.of(2015, 6),
-        "W1");
+  public void createFutureNonStandardAutoId() {
+    EtdFutureSecurity security = FUTURE_CONTRACT.createFuture(YearMonth.of(2015, 6), "W1");
 
-    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of("test", "option"));
-    assertThat(security.getPutCall()).isEqualTo(PutCall.CALL);
-    assertThat(security.getStrikePrice()).isEqualTo(123.45);
-    assertThat(security.getExpiry()).isEqualTo(YearMonth.of(2015, 6));
-    assertThat(security.getContractSpecId()).isEqualTo(OPTION_CONTRACT.getId());
-    assertThat(security.getExpiryDateCode()).hasValue("W1");
-    assertThat(security.getInfo().getPriceInfo()).isEqualTo(OPTION_CONTRACT.getPriceInfo());
+    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of(EtdIdUtils.ETD_SCHEME, "F-ECAG-FOO-201506W1"));
+    assertThat(security.getExpiryMonth()).isEqualTo(YearMonth.of(2015, 6));
+    assertThat(security.getContractSpecId()).isEqualTo(FUTURE_CONTRACT.getId());
+    assertThat(security.getExpiryDateCode()).isEqualTo("W1");
+    assertThat(security.getInfo().getPriceInfo()).isEqualTo(FUTURE_CONTRACT.getPriceInfo());
+  }
+
+  public void createFutureManualId() {
+    EtdFutureSecurity security = FUTURE_CONTRACT.createFuture(YearMonth.of(2015, 6), "", SecurityId.of("A", "B"));
+
+    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of("A", "B"));
+    assertThat(security.getExpiryMonth()).isEqualTo(YearMonth.of(2015, 6));
+    assertThat(security.getContractSpecId()).isEqualTo(FUTURE_CONTRACT.getId());
+    assertThat(security.getExpiryDateCode()).isEmpty();
+    assertThat(security.getInfo().getPriceInfo()).isEqualTo(FUTURE_CONTRACT.getPriceInfo());
   }
 
   public void createFutureFromOptionContractSpec() {
-    SecurityId secId = SecurityId.of("test", "future");
-    assertThatThrownBy(() -> OPTION_CONTRACT.createFuture(secId, YearMonth.of(2015, 6)))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Cannot create a Future from a contract specification of type 'Option'");
-    assertThatThrownBy(() -> OPTION_CONTRACT.createFuture(secId, YearMonth.of(2015, 6), "W1"))
+    assertThatThrownBy(() -> OPTION_CONTRACT.createFuture(YearMonth.of(2015, 6), ""))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Cannot create a Future from a contract specification of type 'Option'");
   }
 
-  public void createStandardFuture() {
-    EtdFutureSecurity security = FUTURE_CONTRACT.createFuture(
-        SecurityId.of("test", "future"),
-        YearMonth.of(2015, 6));
+  //-------------------------------------------------------------------------
+  public void createOptionAutoId() {
+    EtdOptionSecurity security = OPTION_CONTRACT.createOption(YearMonth.of(2015, 6), "", PutCall.CALL, 123.45);
 
-    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of("test", "future"));
-    assertThat(security.getExpiry()).isEqualTo(YearMonth.of(2015, 6));
-    assertThat(security.getContractSpecId()).isEqualTo(FUTURE_CONTRACT.getId());
+    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of(EtdIdUtils.ETD_SCHEME, "O-IFEN-BAR-201506-C123.45"));
+    assertThat(security.getExpiryMonth()).isEqualTo(YearMonth.of(2015, 6));
+    assertThat(security.getContractSpecId()).isEqualTo(OPTION_CONTRACT.getId());
     assertThat(security.getExpiryDateCode()).isEmpty();
-    assertThat(security.getInfo().getPriceInfo()).isEqualTo(FUTURE_CONTRACT.getPriceInfo());
+    assertThat(security.getPutCall()).isEqualTo(PutCall.CALL);
+    assertThat(security.getStrikePrice()).isEqualTo(123.45);
+    assertThat(security.getInfo().getPriceInfo()).isEqualTo(OPTION_CONTRACT.getPriceInfo());
   }
 
-  public void createNonStandardFuture() {
-    EtdFutureSecurity security = FUTURE_CONTRACT.createFuture(
-        SecurityId.of("test", "future"),
-        YearMonth.of(2015, 6),
-        "W1");
+  public void createOptionNonStandardAutoId() {
+    EtdOptionSecurity security = OPTION_CONTRACT.createOption(YearMonth.of(2015, 6), "W1", PutCall.CALL, 123.45);
 
-    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of("test", "future"));
-    assertThat(security.getExpiry()).isEqualTo(YearMonth.of(2015, 6));
-    assertThat(security.getContractSpecId()).isEqualTo(FUTURE_CONTRACT.getId());
-    assertThat(security.getExpiryDateCode()).hasValue("W1");
-    assertThat(security.getInfo().getPriceInfo()).isEqualTo(FUTURE_CONTRACT.getPriceInfo());
+    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of(EtdIdUtils.ETD_SCHEME, "O-IFEN-BAR-201506W1-C123.45"));
+    assertThat(security.getExpiryMonth()).isEqualTo(YearMonth.of(2015, 6));
+    assertThat(security.getContractSpecId()).isEqualTo(OPTION_CONTRACT.getId());
+    assertThat(security.getExpiryDateCode()).isEqualTo("W1");
+    assertThat(security.getPutCall()).isEqualTo(PutCall.CALL);
+    assertThat(security.getStrikePrice()).isEqualTo(123.45);
+    assertThat(security.getInfo().getPriceInfo()).isEqualTo(OPTION_CONTRACT.getPriceInfo());
+  }
+
+  public void createOptionManualId() {
+    EtdOptionSecurity security =
+        OPTION_CONTRACT.createOption(YearMonth.of(2015, 6), "", PutCall.CALL, 123.45, SecurityId.of("A", "B"));
+
+    assertThat(security.getSecurityId()).isEqualTo(SecurityId.of("A", "B"));
+    assertThat(security.getExpiryMonth()).isEqualTo(YearMonth.of(2015, 6));
+    assertThat(security.getContractSpecId()).isEqualTo(OPTION_CONTRACT.getId());
+    assertThat(security.getExpiryDateCode()).isEmpty();
+    assertThat(security.getPutCall()).isEqualTo(PutCall.CALL);
+    assertThat(security.getStrikePrice()).isEqualTo(123.45);
+    assertThat(security.getInfo().getPriceInfo()).isEqualTo(OPTION_CONTRACT.getPriceInfo());
   }
 
   public void createOptionFromFutureContractSpec() {
-    SecurityId secId = SecurityId.of("test", "option");
     assertThatThrownBy(
-        () -> FUTURE_CONTRACT.createOption(secId, PutCall.CALL, 123.45, YearMonth.of(2015, 6)))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Cannot create an Option from a contract specification of type 'Future'");
-    assertThatThrownBy(
-        () -> FUTURE_CONTRACT.createOption(secId, PutCall.CALL, 123.45, YearMonth.of(2015, 6), "W1"))
+        () -> FUTURE_CONTRACT.createOption(YearMonth.of(2015, 6), "", PutCall.CALL, 123.45))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Cannot create an Option from a contract specification of type 'Future'");
   }

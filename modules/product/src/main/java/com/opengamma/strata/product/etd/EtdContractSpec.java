@@ -46,7 +46,9 @@ public final class EtdContractSpec
     implements ImmutableBean, Serializable {
 
   /**
-   * The ID of this template.
+   * The ID of this contract specification.
+   * <p>
+   * When building, this will be defaulted using {@link EtdIdUtils}.
    */
   @PropertyDefinition(validate = "notNull")
   private final EtdContractSpecId id;
@@ -80,7 +82,7 @@ public final class EtdContractSpec
    * The attributes.
    * <p>
    * Security attributes, provide the ability to associate arbitrary information
-   * with a security template in a key-value map.
+   * with a security contract specification in a key-value map.
    */
   @PropertyDefinition(validate = "notNull")
   private final ImmutableMap<SecurityAttributeType<?>, Object> attributes;
@@ -133,104 +135,91 @@ public final class EtdContractSpec
 
   //-------------------------------------------------------------------------
   /**
-   * Creates a future security based on this template.
+   * Creates a future security based on this contract specification.
    * <p>
+   * The security identifier will be automatically created using {@link EtdIdUtils}.
    * The {@link #getType() type} must be {@link EtdType#FUTURE} otherwise an exception will be thrown.
-   * <p>
-   * The future is a standard monthly contract.
    *
-   * @param securityId the ID of the future
-   * @param expiry the expiry of the future
-   * @return a future security based on this template
-   * @throws IllegalStateException if the product type of the template is not {@code FUTURE}
+   * @param expiryMonth  the expiry month of the future
+   * @param expiryDateCode  the code representing the actual day of expiry, empty if no code needed
+   * @return a future security based on this contract specification
+   * @throws IllegalStateException if the product type of the contract specification is not {@code FUTURE}
    */
-  public EtdFutureSecurity createFuture(SecurityId securityId, YearMonth expiry) {
+  public EtdFutureSecurity createFuture(YearMonth expiryMonth, String expiryDateCode) {
     if (type != EtdType.FUTURE) {
       throw new IllegalStateException(
           Messages.format("Cannot create a Future from a contract specification of type '{}'", type));
     }
-    return EtdFutureSecurity.builder()
-        .info(SecurityInfo.of(securityId, priceInfo))
-        .expiry(expiry)
-        .contractSpecId(id)
-        .build();
+    SecurityId securityId = EtdIdUtils.futureId(exchangeId, contractCode, expiryMonth, expiryDateCode);
+    return createFuture(expiryMonth, expiryDateCode, securityId);
   }
 
   /**
-   * Creates a future security based on this template.
+   * Creates a future security based on this contract specification.
    * <p>
    * The {@link #getType() type} must be {@link EtdType#FUTURE} otherwise an exception will be thrown.
-   * <p>
-   * The expiry day of the contract is specified by {@code expiryDateCode}.
    *
-   * @param securityId the ID of the future
-   * @param expiry the expiry of the future
-   * @param expiryDateCode the code representing the actual day of expiry
-   * @return a future security based on this template
-   * @throws IllegalStateException if the product type of the template is not {@code FUTURE}
+   * @param expiryMonth  the expiry month of the future
+   * @param expiryDateCode  the code representing the actual day of expiry, empty if no code needed
+   * @param securityId  the ID of the future
+   * @return a future security based on this contract specification
+   * @throws IllegalStateException if the product type of the contract specification is not {@code FUTURE}
    */
-  public EtdFutureSecurity createFuture(SecurityId securityId, YearMonth expiry, String expiryDateCode) {
+  public EtdFutureSecurity createFuture(YearMonth expiryMonth, String expiryDateCode, SecurityId securityId) {
     if (type != EtdType.FUTURE) {
       throw new IllegalStateException(
           Messages.format("Cannot create a Future from a contract specification of type '{}'", type));
     }
     return EtdFutureSecurity.builder()
         .info(SecurityInfo.of(securityId, priceInfo))
-        .expiry(expiry)
+        .contractSpecId(id)
+        .expiryMonth(expiryMonth)
         .expiryDateCode(expiryDateCode)
-        .contractSpecId(id)
         .build();
   }
 
   /**
-   * Creates an option security based on this template.
+   * Creates an option security based on this contract specification.
    * <p>
+   * The security identifier will be automatically created using {@link EtdIdUtils}.
    * The {@link #getType() type} must be {@link EtdType#OPTION} otherwise an exception will be thrown.
-   * <p>
-   * The option is a standard monthly contract.
    *
-   * @param securityId the ID of the option
-   * @param putCall whether the option is a put or call
-   * @param strikePrice the strike price of the option
-   * @param expiry the expiry of the option
-   * @return an option security based on this template
-   * @throws IllegalStateException if the product type of the template is not {@code OPTION}
+   * @param expiryMonth  the expiry month of the option
+   * @param expiryDateCode  the code representing the actual day of expiry, empty if no code needed
+   * @param putCall  whether the option is a put or call
+   * @param strikePrice  the strike price of the option
+   * @return an option security based on this contract specification
+   * @throws IllegalStateException if the product type of the contract specification is not {@code OPTION}
    */
-  public EtdOptionSecurity createOption(SecurityId securityId, PutCall putCall, double strikePrice, YearMonth expiry) {
+  public EtdOptionSecurity createOption(YearMonth expiryMonth, String expiryDateCode, PutCall putCall, double strikePrice) {
+
     if (type != EtdType.OPTION) {
       throw new IllegalStateException(
           Messages.format("Cannot create an Option from a contract specification of type '{}'", type));
     }
-    return EtdOptionSecurity.builder()
-        .info(SecurityInfo.of(securityId, priceInfo))
-        .putCall(putCall)
-        .strikePrice(strikePrice)
-        .expiry(expiry)
-        .contractSpecId(id)
-        .build();
+    SecurityId securityId = EtdIdUtils.optionId(exchangeId, contractCode, expiryMonth, expiryDateCode, putCall, strikePrice);
+    return createOption(expiryMonth, expiryDateCode, putCall, strikePrice, securityId);
   }
 
   /**
-   * Creates an option security based on this template.
+   * Creates an option security based on this contract specification.
    * <p>
    * The {@link #getType() type} must be {@link EtdType#OPTION} otherwise an exception will be thrown.
-   * <p>
-   * The expiry day of the contract is specified by {@code expiryDateCode}.
    *
-   * @param securityId the ID of the option
-   * @param putCall whether the option is a put or call
-   * @param strikePrice the strike price of the option
-   * @param expiry the expiry of the option
-   * @param expiryDateCode the code representing the actual day of expiry
-   * @return an option security based on this template
-   * @throws IllegalStateException if the product type of the template is not {@code OPTION}
+   * @param expiryMonth  the expiry month of the option
+   * @param expiryDateCode  the code representing the actual day of expiry, empty if no code needed
+   * @param putCall  whether the option is a put or call
+   * @param strikePrice  the strike price of the option
+   * @param securityId  the ID of the option
+   * @return an option security based on this contract specification
+   * @throws IllegalStateException if the product type of the contract specification is not {@code OPTION}
    */
   public EtdOptionSecurity createOption(
-      SecurityId securityId,
+      YearMonth expiryMonth,
+      String expiryDateCode,
       PutCall putCall,
       double strikePrice,
-      YearMonth expiry,
-      String expiryDateCode) {
+      SecurityId securityId) {
 
     if (type != EtdType.OPTION) {
       throw new IllegalStateException(
@@ -238,11 +227,11 @@ public final class EtdContractSpec
     }
     return EtdOptionSecurity.builder()
         .info(SecurityInfo.of(securityId, priceInfo))
+        .contractSpecId(id)
+        .expiryMonth(expiryMonth)
+        .expiryDateCode(expiryDateCode)
         .putCall(putCall)
         .strikePrice(strikePrice)
-        .expiry(expiry)
-        .expiryDateCode(expiryDateCode)
-        .contractSpecId(id)
         .build();
   }
 
@@ -316,7 +305,9 @@ public final class EtdContractSpec
 
   //-----------------------------------------------------------------------
   /**
-   * Gets the ID of this template.
+   * Gets the ID of this contract specification.
+   * <p>
+   * When building, this will be defaulted using {@link EtdIdUtils}.
    * @return the value of the property, not null
    */
   public EtdContractSpecId getId() {
@@ -374,7 +365,7 @@ public final class EtdContractSpec
    * Gets the attributes.
    * <p>
    * Security attributes, provide the ability to associate arbitrary information
-   * with a security template in a key-value map.
+   * with a security contract specification in a key-value map.
    * @return the value of the property, not null
    */
   public ImmutableMap<SecurityAttributeType<?>, Object> getAttributes() {
